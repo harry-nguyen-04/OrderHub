@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Lấy source code
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      # 2. Setup Java 21
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      # 3. Cho phép chạy Maven Wrapper
+      - name: Make Maven Wrapper executable
+        run: chmod +x mvnw
+
+      # 4. Compile
+      - name: Compile
+        run: ./mvnw -B clean compile
+
+      # 5. Run tests
+      - name: Run tests
+        run: ./mvnw -B test
+
+      # 6. Build package
+      - name: Package application
+        run: ./mvnw -B package -DskipTests
