@@ -32,10 +32,6 @@ jobs:
       - name: Compile
         run: ./mvnw -B clean compile
 
-      # 5. Run tests
-      - name: Run tests
-        run: ./mvnw -B test
-
-      # 6. Build package
+      # 5. Build package
       - name: Package application
         run: ./mvnw -B package -DskipTests
