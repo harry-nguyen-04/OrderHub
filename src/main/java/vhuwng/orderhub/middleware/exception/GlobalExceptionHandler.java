@@ -40,4 +40,11 @@ public class GlobalExceptionHandler {
         errors.put("message", ex.getMessage());
         return new ResponseEntity<>(errors, HttpStatus.CONFLICT);
     }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<Map<String, String>> handleUnauthorizedException(UnauthorizedException ex) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("message", ex.getMessage());
+        return new ResponseEntity<>(errors, HttpStatus.UNAUTHORIZED);
+    }
 }
