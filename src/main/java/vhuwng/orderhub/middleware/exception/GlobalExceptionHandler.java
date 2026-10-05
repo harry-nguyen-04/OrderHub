@@ -47,4 +47,18 @@ public class GlobalExceptionHandler {
         errors.put("message", ex.getMessage());
         return new ResponseEntity<>(errors, HttpStatus.UNAUTHORIZED);
     }
+
+    @ExceptionHandler(InsufficientStockException.class)
+    public ResponseEntity<Map<String, String>> handleInsufficientStockException(InsufficientStockException ex) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("message", ex.getMessage());
+        return new ResponseEntity<>(errors, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(InvalidOrderException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidOrderException(InvalidOrderException ex) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("message", ex.getMessage());
+        return new ResponseEntity<>(errors, HttpStatus.UNPROCESSABLE_CONTENT);
+    }
 }

@@ -35,7 +35,7 @@ public class SecurityConfig {
                         .authenticationEntryPoint((request, response, authException) ->
                                 SecurityResponses.write(response, HttpStatus.UNAUTHORIZED.value(), "Unauthorized"))
                         .accessDeniedHandler((request, response, accessDeniedException) ->
-                                SecurityResponses.write(response, HttpStatus.FORBIDDEN.value(), "You are not authorized to access this resource"))
+                                SecurityResponses.write(response, HttpStatus.FORBIDDEN.value(), "You don't have permission to access this resource"))
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login", "/api/auth/refresh").permitAll()
