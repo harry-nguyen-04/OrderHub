@@ -61,4 +61,14 @@ public class GlobalExceptionHandler {
         errors.put("message", ex.getMessage());
         return new ResponseEntity<>(errors, HttpStatus.UNPROCESSABLE_CONTENT);
     }
+
+    @ExceptionHandler(InvalidIdempotencyKeyException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidIdempotencyKeyException(InvalidIdempotencyKeyException ex) {
+        return ResponseEntity.badRequest().body(Map.of("message", ex.getMessage()));
+    }
+
+    @ExceptionHandler(IdempotencyConflictException.class)
+    public ResponseEntity<Map<String, String>> handleIdempotencyConflictException(IdempotencyConflictException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", ex.getMessage()));
+    }
 }
