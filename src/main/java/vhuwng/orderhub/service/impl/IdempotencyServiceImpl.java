@@ -2,8 +2,10 @@ package vhuwng.orderhub.service.impl;
 
 import java.util.Comparator;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -30,6 +32,7 @@ import vhuwng.orderhub.service.OrderService;
 public class IdempotencyServiceImpl implements IdempotencyService {
     private static final int CREATED = 201;
     private static final int MAX_KEY_LENGTH = 128;
+    private static final int MAX_ATTEMPTS = 3;
 
     private final IdempotencyRepository idempotencyRepository;
     private final UserRepository userRepository;
@@ -99,7 +102,7 @@ public class IdempotencyServiceImpl implements IdempotencyService {
         String requestHash = hashOrderRequest(request);
 
         try {
-            return transactionTemplate.execute(status -> {
+            return executeWithOptimisticRetry(() -> transactionTemplate.execute(status -> {
                 IdempotencyKeyEntity record = new IdempotencyKeyEntity();
                 record.setKey(key);
                 record.setUser(userRepository.getReferenceById(userId));
@@ -119,7 +122,7 @@ public class IdempotencyServiceImpl implements IdempotencyService {
                 record.setStatus(IdempotencyStatus.COMPLETED);
                 idempotencyRepository.saveAndFlush(record);
                 return new IdempotencyResultDto<>(CREATED, response, false);
-            });
+            }));
         } catch (ReservationConflictException ex) {
             // Read in a new transaction after the failed insert has rolled back.
             IdempotencyKeyEntity existing = idempotencyRepository
@@ -136,6 +139,19 @@ public class IdempotencyServiceImpl implements IdempotencyService {
             CreateOrderResponseDto response = objectMapper.readValue(
                     existing.getResponseBody(), CreateOrderResponseDto.class);
             return new IdempotencyResultDto<>(existing.getResponseStatus(), response, true);
+        }
+    }
+
+    private <T> T executeWithOptimisticRetry(Supplier<T> action) {
+        for (int attempt = 1; ; attempt++) {
+            try {
+                return action.get();
+            } catch (OptimisticLockingFailureException ex) {
+                // execute() has rolled back before we retry in a new transaction.
+                if (attempt >= MAX_ATTEMPTS) {
+                    throw ex;
+                }
+            }
         }
     }
 
@@ -164,4 +180,3 @@ public class IdempotencyServiceImpl implements IdempotencyService {
         }
     }
 }
-
