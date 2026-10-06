@@ -70,7 +70,7 @@ class OrderServiceImplTest {
         when(userRepository.findByUsername("alice")).thenReturn(Optional.of(user(5L, "alice")));
         ProductEntity mug = product(1L, "Mug", "12.50", "USD", 10, true);
         ProductEntity pen = product(2L, "Pen", "3.00", "USD", 4, true);
-        when(productRepository.findAllByIdInForUpdate(any())).thenReturn(List.of(mug, pen));
+        when(productRepository.findAllByIdInOrderById(any())).thenReturn(List.of(mug, pen));
         when(orderRepository.existsByCode(any())).thenReturn(false);
         when(orderRepository.save(any(OrderEntity.class))).thenAnswer(invocation -> {
             OrderEntity saved = invocation.getArgument(0);
@@ -100,7 +100,7 @@ class OrderServiceImplTest {
 
         @SuppressWarnings("unchecked")
         ArgumentCaptor<Collection<Long>> idsCaptor = ArgumentCaptor.forClass(Collection.class);
-        verify(productRepository).findAllByIdInForUpdate(idsCaptor.capture());
+        verify(productRepository).findAllByIdInOrderById(idsCaptor.capture());
         assertEquals(List.of(1L, 2L), List.copyOf(idsCaptor.getValue()));
     }
 
@@ -109,7 +109,7 @@ class OrderServiceImplTest {
         authenticate("alice", "USER");
         when(userRepository.findByUsername("alice")).thenReturn(Optional.of(user(5L, "alice")));
         ProductEntity mug = product(1L, "Mug", "12.50", "USD", 1, true);
-        when(productRepository.findAllByIdInForUpdate(any())).thenReturn(List.of(mug));
+        when(productRepository.findAllByIdInOrderById(any())).thenReturn(List.of(mug));
 
         CreateOrderRequestDto request = new CreateOrderRequestDto(List.of(
                 new CreateOrderItemRequestDto(1L, 2)
@@ -124,7 +124,7 @@ class OrderServiceImplTest {
     void createOrderMissingProductThrows() {
         authenticate("alice", "USER");
         when(userRepository.findByUsername("alice")).thenReturn(Optional.of(user(5L, "alice")));
-        when(productRepository.findAllByIdInForUpdate(any())).thenReturn(List.of(
+        when(productRepository.findAllByIdInOrderById(any())).thenReturn(List.of(
                 product(1L, "Mug", "12.50", "USD", 10, true)
         ));
 
@@ -142,7 +142,7 @@ class OrderServiceImplTest {
         authenticate("alice", "USER");
         when(userRepository.findByUsername("alice")).thenReturn(Optional.of(user(5L, "alice")));
         ProductEntity mug = product(1L, "Mug", "12.50", "USD", 10, false);
-        when(productRepository.findAllByIdInForUpdate(any())).thenReturn(List.of(mug));
+        when(productRepository.findAllByIdInOrderById(any())).thenReturn(List.of(mug));
 
         CreateOrderRequestDto request = new CreateOrderRequestDto(List.of(
                 new CreateOrderItemRequestDto(1L, 1)
@@ -164,7 +164,7 @@ class OrderServiceImplTest {
         ));
 
         assertThrows(InvalidOrderException.class, () -> orderService.createOrder(request));
-        verify(productRepository, never()).findAllByIdInForUpdate(any());
+        verify(productRepository, never()).findAllByIdInOrderById(any());
         verify(orderRepository, never()).save(any());
     }
 

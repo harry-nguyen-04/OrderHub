@@ -40,6 +40,10 @@ public class ProductEntity {
     @Column(name = "stock", nullable = false)
     private Integer stock = 0;
 
+    @Version
+    @Column(name = "version", nullable = false)
+    private Long version;
+
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 

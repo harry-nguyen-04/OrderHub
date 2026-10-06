@@ -62,7 +62,7 @@ public class OrderServiceImpl implements OrderService {
         UserEntity user = currentUser();
         Map<Long, Integer> quantityByProductId = quantitiesByProductId(request.items());
         List<Long> productIds = quantityByProductId.keySet().stream().sorted().toList();
-        List<ProductEntity> products = productRepository.findAllByIdInForUpdate(productIds);
+        List<ProductEntity> products = productRepository.findAllByIdInOrderById(productIds);
         ensureProductsFound(productIds, products);
         ensureOrderable(products, quantityByProductId);
 
