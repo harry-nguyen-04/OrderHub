@@ -17,18 +17,26 @@ import vhuwng.orderhub.dto.request.CreateOrderRequestDto;
 import vhuwng.orderhub.dto.response.CreateOrderResponseDto;
 import vhuwng.orderhub.dto.response.IdempotencyResultDto;
 import vhuwng.orderhub.dto.response.OrderResponseDto;
+import vhuwng.orderhub.dto.response.PaymentResponseDto;
 import vhuwng.orderhub.service.IdempotencyService;
 import vhuwng.orderhub.service.OrderService;
+import vhuwng.orderhub.service.PaymentService;
 
 @RestController
 @RequestMapping("/api/orders")
 public class OrderController {
     private final OrderService orderService;
     private final IdempotencyService idempotencyService;
+    private final PaymentService paymentService;
 
-    public OrderController(OrderService orderService, IdempotencyService idempotencyService) {
+    public OrderController(
+            OrderService orderService,
+            IdempotencyService idempotencyService,
+            PaymentService paymentService
+    ) {
         this.orderService = orderService;
         this.idempotencyService = idempotencyService;
+        this.paymentService = paymentService;
     }
 
     @PostMapping
@@ -53,5 +61,14 @@ public class OrderController {
     @GetMapping("/{id}")
     public ResponseEntity<OrderResponseDto> getOrderById(@PathVariable Long id) {
         return ResponseEntity.ok(orderService.getOrderById(id));
+    }
+
+    @PostMapping("/{id}/pay")
+    public ResponseEntity<PaymentResponseDto> payOrder(@PathVariable Long id) {
+        var response = paymentService.pay(id);
+        if ("PAID".equals(response.paymentStatus())) {
+            return ResponseEntity.ok(response);
+        }
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
 }

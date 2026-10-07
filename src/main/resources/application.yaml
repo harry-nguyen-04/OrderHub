@@ -23,6 +23,14 @@ logging:
       console: logstash
 
 app:
+  payment:
+    provider-base-url: ${PAYMENT_PROVIDER_BASE_URL:http://localhost:8081}
+    webhook-secret: ${PAYMENT_WEBHOOK_SECRET}
+    connect-timeout: 300ms
+    read-timeout: 500ms
+    time-limit: 3s
+    max-attempts: 3
+    retry-initial-backoff: 100ms
   jwt:
     secret: ${JWT_SECRET}
     access-token-expiration: ${ACCESS_TOKEN_EXPIRATION}

@@ -63,6 +63,21 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errors, HttpStatus.UNPROCESSABLE_CONTENT);
     }
 
+    @ExceptionHandler(PaymentConflictException.class)
+    public ResponseEntity<Map<String, String>> handlePaymentConflictException(PaymentConflictException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", ex.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidPaymentWebhookException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidPaymentWebhookException(InvalidPaymentWebhookException ex) {
+        return ResponseEntity.badRequest().body(Map.of("message", ex.getMessage()));
+    }
+
+    @ExceptionHandler(PaymentProviderException.class)
+    public ResponseEntity<Map<String, String>> handlePaymentProviderException(PaymentProviderException ex) {
+        return ResponseEntity.status(ex.getStatus()).body(Map.of("message", ex.getMessage()));
+    }
+
     @ExceptionHandler(InvalidIdempotencyKeyException.class)
     public ResponseEntity<Map<String, String>> handleInvalidIdempotencyKeyException(InvalidIdempotencyKeyException ex) {
         return ResponseEntity.badRequest().body(Map.of("message", ex.getMessage()));
