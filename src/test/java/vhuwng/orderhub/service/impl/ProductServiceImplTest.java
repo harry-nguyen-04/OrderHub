@@ -22,17 +22,20 @@ import vhuwng.orderhub.entity.ProductEntity;
 import vhuwng.orderhub.middleware.exception.DuplicateResourceException;
 import vhuwng.orderhub.middleware.exception.ResourceNotFoundException;
 import vhuwng.orderhub.repository.ProductRepository;
+import vhuwng.orderhub.util.RedisCacheUtil;
 
 @ExtendWith(MockitoExtension.class)
 class ProductServiceImplTest {
     @Mock
     private ProductRepository productRepository;
+    @Mock
+    private RedisCacheUtil cacheUtil;
 
     private ProductServiceImpl productService;
 
     @BeforeEach
     void setUp() {
-        productService = new ProductServiceImpl(productRepository);
+        productService = new ProductServiceImpl(productRepository, cacheUtil);
     }
 
     @Test
