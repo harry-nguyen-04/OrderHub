@@ -110,7 +110,7 @@ class InvoiceServiceImplTest {
     }
 
     @Test
-    void uploadRejectsMissingOrderAndAnotherUsersOrder() {
+    void uploadRejectsMissingOrderAndAnotherUsersOrder() throws IOException {
         when(fileValidator.validate(file)).thenReturn(new ValidatedInvoiceFile("image/png", "png", 8));
         when(authService.getCurrentUser()).thenReturn(user(5L));
         when(orderRepository.findByIdForUpdate(42L)).thenReturn(Optional.empty());
@@ -123,7 +123,7 @@ class InvoiceServiceImplTest {
     }
 
     @Test
-    void uploadRejectsOrderThatIsNotPaid() {
+    void uploadRejectsOrderThatIsNotPaid() throws IOException {
         when(fileValidator.validate(file)).thenReturn(new ValidatedInvoiceFile("image/jpeg", "jpg", 8));
         when(authService.getCurrentUser()).thenReturn(user(5L));
         when(orderRepository.findByIdForUpdate(42L))
