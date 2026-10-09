@@ -1,5 +1,7 @@
 package vhuwng.orderhub.config;
 
+import jakarta.servlet.DispatcherType;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -35,10 +37,12 @@ public class SecurityConfig {
                         .authenticationEntryPoint((request, response, authException) ->
                                 SecurityResponses.write(response, HttpStatus.UNAUTHORIZED.value(), "Unauthorized"))
                         .accessDeniedHandler((request, response, accessDeniedException) ->
-                                SecurityResponses.write(response, HttpStatus.FORBIDDEN.value(), "You are not authorized to access this resource"))
+                                SecurityResponses.write(response, HttpStatus.FORBIDDEN.value(), "You don't have permission to access this resource"))
                 )
                 .authorizeHttpRequests(auth -> auth
+                        .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login", "/api/auth/refresh").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/webhooks/payment").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/products", "/api/products/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/products/{id}").permitAll()
                         .requestMatchers(HttpMethod.GET, "/me").authenticated()
