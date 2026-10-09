@@ -36,6 +36,7 @@ import vhuwng.orderhub.repository.OrderRepository;
 import vhuwng.orderhub.repository.ProductRepository;
 import vhuwng.orderhub.repository.UserRepository;
 import vhuwng.orderhub.service.OrderService;
+import vhuwng.orderhub.util.RedisCacheUtil;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -45,15 +46,18 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final RedisCacheUtil cacheUtil;
 
     public OrderServiceImpl(
             OrderRepository orderRepository,
             ProductRepository productRepository,
-            UserRepository userRepository
+            UserRepository userRepository,
+            RedisCacheUtil cacheUtil
     ) {
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
         this.userRepository = userRepository;
+        this.cacheUtil = cacheUtil;
     }
 
     @Override
@@ -73,6 +77,7 @@ public class OrderServiceImpl implements OrderService {
         order.setItems(buildItems(order, products, quantityByProductId));
         order.setTotalAmount(totalAmount(order.getItems()));
         order = orderRepository.save(order);
+        cacheUtil.deleteByPrefix("products:list:");
         return CreateOrderResponseDto.fromEntity(order);
     }
 

@@ -34,6 +34,7 @@ build/
 .vscode/
 
 .env
+docker/seaweedfs/s3.json
 AGENTS.md
 docs
 

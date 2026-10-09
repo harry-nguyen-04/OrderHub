@@ -6,7 +6,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import vhuwng.orderhub.annotation.redis.RedisCache;
 import vhuwng.orderhub.dto.filter.ProductFilterDto;
 import vhuwng.orderhub.dto.request.CreateProductRequestDto;
 import vhuwng.orderhub.dto.request.UpdateProductResquestDto;
@@ -19,15 +21,22 @@ import vhuwng.orderhub.middleware.exception.ResourceNotFoundException;
 import vhuwng.orderhub.repository.ProductRepository;
 import vhuwng.orderhub.repository.specification.ProductSpecifications;
 import vhuwng.orderhub.service.ProductService;
+import vhuwng.orderhub.util.RedisCacheUtil;
 
 @Service
 public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
+    private final RedisCacheUtil cacheUtil;
 
-    public ProductServiceImpl(ProductRepository productRepository) {
+    public ProductServiceImpl(ProductRepository productRepository, RedisCacheUtil cacheUtil) {
         this.productRepository = productRepository;
+        this.cacheUtil = cacheUtil;
     }
 
+    @RedisCache(
+            key = "products:list",
+            ttl = 600
+    )
     @Override
     public Page<ProductResponseDto> getAllProducts(ProductFilterDto filter) {
         Specification<ProductEntity> spec =
@@ -44,6 +53,7 @@ public class ProductServiceImpl implements ProductService {
     }
     
     @Override
+    @Transactional
     public CreateProductResponseDto createProduct(CreateProductRequestDto request) {
         if (productRepository.existsBySku(request.sku())) {
             throw new DuplicateResourceException("Product", "sku", request.sku());
@@ -59,10 +69,12 @@ public class ProductServiceImpl implements ProductService {
         product.setCreatedAt(Instant.now());
         product.setUpdatedAt(Instant.now());
         product = productRepository.save(product);
+        cacheUtil.deleteByPrefix("products:list:");
         return CreateProductResponseDto.fromEntity(product);
     }
 
     @Override
+    @Transactional
     public UpdateProductResponseDto updateProduct(Long id, UpdateProductResquestDto request) {
         ProductEntity product = productRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Product with id " + id + " not found"));
@@ -75,16 +87,19 @@ public class ProductServiceImpl implements ProductService {
         product.setIsActive(request.isActive());
         product.setUpdatedAt(Instant.now());
         product = productRepository.save(product);
+        cacheUtil.deleteByPrefix("products:list:");
         return UpdateProductResponseDto.fromEntity(product);
     }
     
     @Override
+    @Transactional
     public void deleteProduct(Long id) {
         ProductEntity product = productRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Product with id " + id + " not found"));
         product.setIsActive(false);
         product.setUpdatedAt(Instant.now());
         productRepository.save(product);
+        cacheUtil.deleteByPrefix("products:list:");
     }
     
     

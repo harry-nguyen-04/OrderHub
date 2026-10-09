@@ -42,6 +42,7 @@ import vhuwng.orderhub.middleware.exception.ResourceNotFoundException;
 import vhuwng.orderhub.repository.OrderRepository;
 import vhuwng.orderhub.repository.ProductRepository;
 import vhuwng.orderhub.repository.UserRepository;
+import vhuwng.orderhub.util.RedisCacheUtil;
 
 @ExtendWith(MockitoExtension.class)
 class OrderServiceImplTest {
@@ -51,12 +52,14 @@ class OrderServiceImplTest {
     private ProductRepository productRepository;
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private RedisCacheUtil cacheUtil;
 
     private OrderServiceImpl orderService;
 
     @BeforeEach
     void setUp() {
-        orderService = new OrderServiceImpl(orderRepository, productRepository, userRepository);
+        orderService = new OrderServiceImpl(orderRepository, productRepository, userRepository, cacheUtil);
     }
 
     @AfterEach
